@@ -5,6 +5,7 @@ import { useParams } from "next/navigation"
 import { getSupabaseClient } from "@/lib/client"
 import type { Match, Player, MatchStat } from "@/lib/types"
 import { StatsRecorder } from "@/components/stats-recorder"
+import { MatchSummary } from "@/components/match-summary"
 import { Card } from "@/components/ui/card"
 import { POSITIVE_METRICS, NEGATIVE_METRICS } from "@/lib/config"
 
@@ -90,13 +91,14 @@ export default function MatchStatsPage() {
 
   return (
     <div className="space-y-6">
-      <Card className="p-4 bg-blue-50">
-        <h2 className="text-2xl font-bold mb-2">vs {opponentName}</h2>
-        <p className="text-sm text-gray-600">{new Date(match.date).toLocaleDateString("es-ES")}</p>
+      <Card className="p-4 bg-gradient-to-br from-amber-50 to-orange-50 border-2 border-amber-200">
+        <h2 className="text-2xl font-bold mb-2 text-amber-900">⚡ vs {opponentName}</h2>
+        <p className="text-sm text-amber-700 font-medium">{new Date(match.date).toLocaleDateString("es-ES")}</p>
       </Card>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <div>
+      <div className="space-y-6">
+        {/* Stats Recorder - Full Width on Mobile, Constrained on Desktop */}
+        <div className="w-full">
           <StatsRecorder
             matchId={matchId}
             players={players}
@@ -105,86 +107,9 @@ export default function MatchStatsPage() {
           />
         </div>
 
-        <div>
-          <Card className="p-6 bg-gradient-to-br from-blue-50 to-blue-100 border-2 border-blue-300">
-            <h3 className="font-black text-xl mb-6 text-blue-900">Resumen Detallado</h3>
-            <div className="space-y-4">
-              <div className="grid grid-cols-2 gap-4 pb-4 border-b">
-                <div>
-                  <div className="text-xs text-gray-600">Total de Acciones</div>
-                  <div className="font-bold text-3xl">{stats.length}</div>
-                </div>
-                <div>
-                  <div className="text-xs text-gray-600">Jugadores Activos</div>
-                  <div className="font-bold text-3xl">{players.length}</div>
-                </div>
-              </div>
-              <div className="space-y-3">
-                <table className="w-full text-sm">
-                  <thead>
-                    <tr className="bg-gray-100">
-                      <th className="px-2 py-2 text-left font-bold">Jugador</th>
-                      <th className="px-2 py-2 text-center font-bold">Acciones</th>
-                      <th className="px-2 py-2 text-right font-bold">Balance</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {players
-                      .map((player) => {
-                        const playerStats = stats.filter((s) => s.player_id === player.id)
-                        const positive = playerStats.filter((s) => POSITIVE_METRICS.includes(s.metric)).length
-                        const negative = playerStats.filter((s) => NEGATIVE_METRICS.includes(s.metric)).length
-                        const balance = positive - negative
-                        return { player, actionCount: playerStats.length, balance, positive, negative }
-                      })
-                      .sort((a, b) => b.balance - a.balance)
-                      .map(({ player, actionCount, balance }, rank) => {
-                        let rowClass = "border-b hover:bg-gray-50"
-                        let nameClass = "px-2 py-2 font-medium"
-                        let actionClass = "px-2 py-2 text-center font-bold"
-                        let balanceClass = "px-2 py-2 text-right font-bold"
-                        let textSize = "text-sm"
-
-                        if (rank === 0) {
-                          // MVP - Gold
-                          rowClass = "bg-gradient-to-r from-yellow-100 to-yellow-200 border-b border-yellow-400 shadow-md transform scale-105 origin-left"
-                          nameClass = "px-3 py-3 font-black text-lg text-black-900"
-                          actionClass = "px-3 py-3 text-center font-black text-lg text-black-900"
-                          balanceClass = "px-3 py-3 text-right font-black text-lg text-black-900"
-                          textSize = "text-base"
-                        } else if (rank === 1) {
-                          // Second - Silver
-                          rowClass = "bg-gradient-to-r from-gray-300 to-gray-200 border-b border-gray-400 shadow-sm transform scale-102 origin-left"
-                          nameClass = "px-3 py-2 font-bold text-gray-900"
-                          actionClass = "px-3 py-2 text-center font-bold text-gray-900"
-                          balanceClass = "px-3 py-2 text-right font-bold text-gray-900"
-                          textSize = "text-sm"
-                        } else if (rank === 2) {
-                          // Third - Bronze
-                          rowClass = "bg-gradient-to-r from-orange-300 to-orange-200 border-b border-orange-400 shadow-sm transform scale-101 origin-left"
-                          nameClass = "px-3 py-2 font-bold text-orange-900"
-                          actionClass = "px-3 py-2 text-center font-bold text-orange-900"
-                          balanceClass = "px-3 py-2 text-right font-bold text-orange-900"
-                        }
-
-                        return (
-                          <tr key={player.id} className={`transition-all duration-300 ${rowClass}`}>
-                            <td className={nameClass}>
-                              {player.name}
-                            </td>
-                            <td className={actionClass}>{actionCount}</td>
-                            <td className={`${balanceClass} ${balance > 0 ? "text-green-700" : balance < 0 ? "text-red-700" : ""}`}>
-                              {balance > 0 ? "+" : ""}
-                              {balance}
-                            </td>
-                          </tr>
-                        )
-                      })}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          </Card>
+        {/* Match Summary - Full Width */}
+        <div className="w-full">
+          <MatchSummary stats={stats} players={players} />
         </div>
       </div>
     </div>

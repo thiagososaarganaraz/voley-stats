@@ -2,7 +2,8 @@
 
 import { useState } from "react"
 import { Card } from "@/components/ui/card"
-import { METRICS, type MatchStat, type Player, POSITIVE_METRICS, NEGATIVE_METRICS, calculateBalance } from "@/lib/types"
+import { POSITIVE_METRICS, NEGATIVE_METRICS, calculateBalance, getAllMetricsAsArray, type MetricType } from "@/lib/config"
+import type { MatchStat, Player } from "@/lib/types"
 
 interface StatsDisplayProps {
   matchId: string
@@ -15,10 +16,7 @@ export function StatsDisplay({ matchId, players, stats }: StatsDisplayProps) {
   const [filterPlayer, setFilterPlayer] = useState<string>("")
   const [filterSet, setFilterSet] = useState<string>("")
 
-  const metricsArray = Object.entries(METRICS).map(([key, label]) => ({
-    key: key as any,
-    label,
-  }))
+  const metricsArray = getAllMetricsAsArray()
 
   const filteredStats = stats.filter((stat) => {
     if (filterMetric && stat.metric !== filterMetric) return false
